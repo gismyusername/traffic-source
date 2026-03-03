@@ -75,11 +75,24 @@ export default function Sites() {
         ) : (
           <div className="sites-list">
             {[...sites]
-              .map((site) => ({
-                ...site,
-                totalPageviews: site.hourly.reduce((sum, h) => sum + h.pageviews, 0),
-                totalVisitors: site.hourly.reduce((sum, h) => sum + h.visitors, 0),
-              }))
+              .map((site) => {
+                // Pad hourly to always have 24 entries for consistent bar widths
+                const hourlyMap = {};
+                for (const h of site.hourly) hourlyMap[h.hour] = h;
+                const now = new Date();
+                const padded = [];
+                for (let i = 23; i >= 0; i--) {
+                  const d = new Date(now.getTime() - i * 3600000);
+                  const key = d.toISOString().slice(0, 13).replace('T', ' ') + ':00';
+                  padded.push(hourlyMap[key] || { hour: key, pageviews: 0, visitors: 0 });
+                }
+                return {
+                  ...site,
+                  hourly: padded,
+                  totalPageviews: site.hourly.reduce((sum, h) => sum + h.pageviews, 0),
+                  totalVisitors: site.hourly.reduce((sum, h) => sum + h.visitors, 0),
+                };
+              })
               .sort((a, b) => b.totalPageviews - a.totalPageviews)
               .map((site) => {
               const { totalPageviews, totalVisitors } = site;
