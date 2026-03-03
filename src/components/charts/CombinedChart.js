@@ -9,7 +9,6 @@ import {
 } from 'recharts';
 
 export default function CombinedChart({ trafficData, revenueData }) {
-  // Merge traffic + revenue data by date
   const merged = mergeByDate(trafficData, revenueData);
 
   if (!merged || merged.length === 0) {
@@ -27,12 +26,12 @@ export default function CombinedChart({ trafficData, revenueData }) {
     <div className="chart-container">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={merged} margin={{ top: 10, right: hasRevenue ? 50 : 20, left: 10, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0ece8" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 11, fill: '#999' }}
+            tick={{ fontSize: 11, fill: '#71717a' }}
             tickLine={false}
-            axisLine={{ stroke: '#f0ece8' }}
+            axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
             tickFormatter={(val) => {
               if (val.includes(' ')) return val.split(' ')[1];
               const d = new Date(val + 'T00:00:00');
@@ -41,7 +40,7 @@ export default function CombinedChart({ trafficData, revenueData }) {
           />
           <YAxis
             yAxisId="left"
-            tick={{ fontSize: 11, fill: '#999' }}
+            tick={{ fontSize: 11, fill: '#71717a' }}
             tickLine={false}
             axisLine={false}
             width={40}
@@ -50,7 +49,7 @@ export default function CombinedChart({ trafficData, revenueData }) {
             <YAxis
               yAxisId="right"
               orientation="right"
-              tick={{ fontSize: 11, fill: '#999' }}
+              tick={{ fontSize: 11, fill: '#71717a' }}
               tickLine={false}
               axisLine={false}
               width={50}
@@ -59,12 +58,15 @@ export default function CombinedChart({ trafficData, revenueData }) {
           )}
           <Tooltip
             contentStyle={{
-              background: '#fff',
-              border: '1px solid #f0ece8',
-              borderRadius: 10,
+              background: '#0a0a0a',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 8,
               fontSize: 13,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+              color: '#fafafa',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.7)',
             }}
+            itemStyle={{ color: '#fafafa' }}
+            labelStyle={{ color: '#71717a' }}
             formatter={(value, name) => {
               if (name === 'revenue') return [`$${(value / 100).toFixed(2)}`, 'Revenue'];
               if (name === 'page_views') return [value.toLocaleString(), 'Pageviews'];
@@ -76,16 +78,16 @@ export default function CombinedChart({ trafficData, revenueData }) {
             <Bar
               yAxisId="right"
               dataKey="revenue"
-              fill="#f4c3b8"
+              fill="#22c55e"
               radius={[4, 4, 0, 0]}
               barSize={20}
-              opacity={0.7}
+              opacity={0.6}
             />
           )}
           <Bar
             yAxisId="left"
             dataKey="page_views"
-            fill="#e8604c"
+            fill="#fafafa"
             radius={[4, 4, 0, 0]}
             barSize={20}
           />
@@ -93,7 +95,7 @@ export default function CombinedChart({ trafficData, revenueData }) {
             <Bar
               yAxisId="left"
               dataKey="visitors"
-              fill="#f4c3b8"
+              fill="rgba(255,255,255,0.35)"
               radius={[4, 4, 0, 0]}
               barSize={20}
             />

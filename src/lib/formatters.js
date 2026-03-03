@@ -5,18 +5,20 @@ export function countryCodeToFlag(countryCode) {
   return String.fromCodePoint(first.charCodeAt(0) + base, second.charCodeAt(0) + base);
 }
 
-export function formatCountryLabel(codeOrName) {
+export function getCountryName(codeOrName) {
   if (!codeOrName) return 'Unknown';
   const value = String(codeOrName).trim();
   if (!/^[a-z]{2}$/i.test(value)) return value;
   const upper = value.toUpperCase();
-  let countryName = upper;
   try {
-    countryName = new Intl.DisplayNames(['en'], { type: 'region' }).of(upper) || upper;
+    return new Intl.DisplayNames(['en'], { type: 'region' }).of(upper) || upper;
   } catch {
-    countryName = upper;
+    return upper;
   }
-  return `${countryCodeToFlag(upper)} ${countryName}`;
+}
+
+export function formatCountryLabel(codeOrName) {
+  return getCountryName(codeOrName);
 }
 
 export function getBrowserIcon(name = '') {

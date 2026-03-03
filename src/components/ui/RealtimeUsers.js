@@ -1,18 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { countryCodeToFlag } from '@/lib/formatters';
-
-function groupByCountry(users) {
-  const map = {};
-  for (const user of users) {
-    const code = user.country ? user.country.toUpperCase() : 'UNKNOWN';
-    if (!map[code]) map[code] = [];
-    map[code].push(user);
-  }
-  return Object.entries(map)
-    .map(([code, visitors]) => ({ code, visitors, count: visitors.length }))
-    .sort((a, b) => b.count - a.count);
-}
+import { getCountryName, getBrowserIcon, getDeviceIcon } from '@/lib/formatters';
+import CountryFlag from './CountryFlag';
+import VisitorAvatar from './VisitorAvatar';
 
 export default function RealtimeUsers() {
   const [data, setData] = useState(null);
@@ -45,8 +35,8 @@ export default function RealtimeUsers() {
   if (!data) return null;
 
   return (
-    <div className="realtime-strip">
-      <div className="realtime-indicator">
+    <div className="realtime-panel">
+      <div className="realtime-header">
         <span className="realtime-dot" />
         <span className="realtime-count">{data.count}</span>
         <span className="realtime-label">
@@ -55,15 +45,45 @@ export default function RealtimeUsers() {
       </div>
 
       {data.users.length > 0 && (
-        <div className="realtime-flags">
-          {groupByCountry(data.users).map(({ code, count }) => (
-            <div key={code} className="realtime-flag">
-              <span className="realtime-flag-emoji">
-                {code !== 'UNKNOWN' ? countryCodeToFlag(code) : '\u{1F310}'}
-              </span>
-              {count > 1 && <span className="realtime-flag-count">{count}</span>}
-            </div>
-          ))}
+        <table className="realtime-table">
+          <thead>
+            <tr>
+              <th>Visitor</th>
+              <th>Country</th>
+              <th>Browser</th>
+              <th>Device</th>
+              <th>Page</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.users.slice(0, 20).map((user) => (
+              <tr key={user.visitor_id}>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <VisitorAvatar visitorId={user.visitor_id} size={32} />
+                    <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                      {user.visitor_id.slice(0, 8)}...
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <CountryFlag code={user.country} size="s" />
+                    <span>{user.country ? getCountryName(user.country) : 'Unknown'}</span>
+                  </div>
+                </td>
+                <td>{getBrowserIcon(user.browser)} {user.browser || 'Unknown'}</td>
+                <td>{getDeviceIcon(user.device_type)} {user.device_type || 'Unknown'}</td>
+                <td style={{ color: 'var(--text-secondary)' }}>{user.current_page || '/'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {data.users.length > 20 && (
+        <div style={{ padding: '10px 16px', fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', borderTop: '1px solid var(--border-light)' }}>
+          +{data.users.length - 20} more visitors
         </div>
       )}
     </div>

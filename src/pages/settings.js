@@ -25,12 +25,15 @@ export default function Settings() {
         <title>Settings - Traffic Source</title>
       </Head>
       <DashboardLayout>
+        <h2 className="page-title">Account Settings</h2>
         <div style={{ maxWidth: 600 }}>
-          <div className="card" style={{ marginBottom: 24 }}>
-            <div className="card-header">
-              <h3>Profile</h3>
+          <div className="panel" style={{ marginBottom: 24 }}>
+            <div className="panel-header">
+              <div className="panel-tabs">
+                <button className="panel-tab active">Profile</button>
+              </div>
             </div>
-            <div className="card-body">
+            <div className="panel-body">
               <form onSubmit={handleUpdateProfile} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {message && (
                   <div style={{ background: 'var(--success-light)', color: 'var(--success)', padding: '10px 14px', borderRadius: 'var(--radius)', fontSize: 13 }}>

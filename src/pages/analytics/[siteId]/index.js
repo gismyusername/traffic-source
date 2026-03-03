@@ -6,7 +6,8 @@ import AnalyticsPanel from '@/components/ui/AnalyticsPanel';
 import CombinedChart from '@/components/charts/CombinedChart';
 import RealtimeUsers from '@/components/ui/RealtimeUsers';
 import { useAnalytics } from '@/hooks/useAnalytics';
-import { formatCountryLabel, getBrowserIcon, getOsIcon, getDeviceIcon, buildPageHref } from '@/lib/formatters';
+import { getCountryName, getBrowserIcon, getOsIcon, getDeviceIcon, buildPageHref } from '@/lib/formatters';
+import CountryFlag from '@/components/ui/CountryFlag';
 
 export default function Analytics() {
   const router = useRouter();
@@ -87,7 +88,12 @@ export default function Analytics() {
             }}
             renderLabel={(row, meta) => {
               if (meta.activeTab === 'city') return row.name;
-              return formatCountryLabel(row.name);
+              return (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <CountryFlag code={row.name} size="s" />
+                  {getCountryName(row.name)}
+                </span>
+              );
             }}
             showPercentage
             defaultTab="country"

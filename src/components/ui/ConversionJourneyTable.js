@@ -1,7 +1,9 @@
-import { countryCodeToFlag, getBrowserIcon, getOsIcon, getDeviceIcon } from '@/lib/formatters';
+import { getCountryName, getBrowserIcon, getOsIcon, getDeviceIcon } from '@/lib/formatters';
+import CountryFlag from './CountryFlag';
+import VisitorAvatar from './VisitorAvatar';
 
 const JOURNEY_COLORS = [
-  '#e8604c', '#4c9fe8', '#22c55e', '#f59e0b', '#8b5cf6',
+  '#7c5bf5', '#4c9fe8', '#22c55e', '#f5875b', '#8b5cf6',
   '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16',
 ];
 
@@ -20,8 +22,7 @@ function formatTimeToComplete(seconds) {
   if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes`;
   if (seconds < 86400) {
     const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    return m > 0 ? `${h} hours` : `${h} hours`;
+    return `${h} hours`;
   }
   const d = Math.floor(seconds / 86400);
   return `${d} days`;
@@ -50,22 +51,6 @@ function formatTimestamp(isoStr) {
     month: 'short',
     day: 'numeric',
   }) + ' at ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-}
-
-const AVATAR_EMOJIS = [
-  '\u{1F60A}', '\u{1F60E}', '\u{1F913}', '\u{1F60D}', '\u{1F914}',
-  '\u{1F929}', '\u{1F970}', '\u{1F642}', '\u{1F609}', '\u{1F60B}',
-  '\u{1F917}', '\u{1F604}', '\u{1F973}', '\u{1F978}', '\u{1F920}',
-  '\u{1FAE1}', '\u{1FAE0}', '\u{1FAE3}', '\u{1F60F}', '\u{1F636}',
-];
-
-function getAvatarEmoji(visitorId) {
-  let hash = 0;
-  for (let i = 0; i < (visitorId || '').length; i++) {
-    hash = ((hash << 5) - hash) + visitorId.charCodeAt(i);
-    hash |= 0;
-  }
-  return AVATAR_EMOJIS[Math.abs(hash) % AVATAR_EMOJIS.length];
 }
 
 function maskName(email) {
@@ -107,9 +92,7 @@ export default function ConversionJourneyTable({ conversions }) {
               <tr key={conv.id}>
                 <td>
                   <div className="visitor-cell">
-                    <div className="visitor-avatar-lg">
-                      {getAvatarEmoji(conv.visitor_id)}
-                    </div>
+                    <VisitorAvatar visitorId={conv.visitor_id} size={44} />
                     <div className="visitor-info">
                       <div className="visitor-name">
                         {displayName}
@@ -117,7 +100,10 @@ export default function ConversionJourneyTable({ conversions }) {
                       </div>
                       <div className="visitor-meta">
                         {conv.country && (
-                          <span>{countryCodeToFlag(conv.country.toUpperCase())} {conv.country}</span>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                            <CountryFlag code={conv.country} size="s" />
+                            {getCountryName(conv.country)}
+                          </span>
                         )}
                         {conv.device_type && (
                           <span>{getDeviceIcon(conv.device_type)} {conv.device_type}</span>

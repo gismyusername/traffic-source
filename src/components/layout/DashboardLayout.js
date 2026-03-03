@@ -5,61 +5,73 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useDateRange } from '@/contexts/DateRangeContext';
 
 const periods = [
-  { value: '24h', label: '24h' },
-  { value: '7d', label: '7 days' },
-  { value: '30d', label: '30 days' },
-  { value: '90d', label: '90 days' },
-  { value: '12m', label: '12 months' },
+  { value: '24h', label: '1D' },
+  { value: '7d', label: '7D' },
+  { value: '30d', label: '1M' },
+  { value: '90d', label: '3M' },
+  { value: '12m', label: '1Y' },
 ];
 
 export default function DashboardLayout({ children, siteId, siteName }) {
-  const router = useRouter();
-  const { logout } = useAuth();
   const { period, setPeriod, setCustomRange } = useDateRange();
+  const { logout } = useAuth();
+  const router = useRouter();
   const path = router.asPath;
 
   return (
     <ProtectedRoute>
-      <div className="app-topbar">
-        <div className="app-topbar-left">
-          <Link href="/sites" className="app-topbar-logo">
-            TS
-          </Link>
-
-          {siteName && (
-            <button
-              className="app-topbar-site"
-              onClick={() => router.push('/sites')}
-            >
-              {siteName}
-            </button>
-          )}
-
-          <div className="date-picker">
-            {periods.map((p) => (
-              <button
-                key={p.value}
-                className={period === p.value ? 'active' : ''}
-                onClick={() => { setCustomRange(null); setPeriod(p.value); }}
-              >
-                {p.label}
-              </button>
-            ))}
+      <div className="app-layout">
+        <header className="app-header">
+          <div className="app-header-left">
+            <Link href="/sites" className="app-logo">Traffic Source</Link>
+            <nav className="app-nav">
+              <Link href="/sites" className={`app-nav-link ${path === '/sites' ? 'active' : ''}`}>
+                Sites
+              </Link>
+              {siteId && (
+                <>
+                  <Link
+                    href={`/analytics/${siteId}`}
+                    className={`app-nav-link ${path === `/analytics/${siteId}` ? 'active' : ''}`}
+                  >
+                    Analytics
+                  </Link>
+                  <Link
+                    href={`/analytics/${siteId}/conversions`}
+                    className={`app-nav-link ${path.includes('/conversions') ? 'active' : ''}`}
+                  >
+                    Conversions
+                  </Link>
+                  <Link
+                    href={`/analytics/${siteId}/settings`}
+                    className={`app-nav-link ${path.includes('/settings') && path.includes('/analytics/') ? 'active' : ''}`}
+                  >
+                    Settings
+                  </Link>
+                </>
+              )}
+            </nav>
           </div>
-        </div>
-
-        <div className="app-topbar-right">
-          <div className="app-topbar-nav">
-            <Link href="/sites" className={path === '/sites' ? 'active' : ''}>Sites</Link>
-            <Link href="/settings" className={path === '/settings' ? 'active' : ''}>Settings</Link>
-            <button onClick={logout}>Sign out</button>
+          <div className="app-header-right">
+            <div className="date-picker">
+              {periods.map((p) => (
+                <button
+                  key={p.value}
+                  className={period === p.value ? 'active' : ''}
+                  onClick={() => { setCustomRange(null); setPeriod(p.value); }}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <button className="btn-ghost" onClick={logout}>Sign out</button>
           </div>
-        </div>
+        </header>
+
+        <main className="app-content">
+          {children}
+        </main>
       </div>
-
-      <main className="app-content">
-        {children}
-      </main>
     </ProtectedRoute>
   );
 }
