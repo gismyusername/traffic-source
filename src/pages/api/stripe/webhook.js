@@ -1,5 +1,5 @@
 export default function handler(req, res) {
   res.status(410).json({
-    error: 'This endpoint is deprecated. Use /api/stripe/webhook/[siteId] instead.',
+    error: 'Webhooks are no longer used. Conversions are synced automatically via Stripe API polling.',
   });
 }

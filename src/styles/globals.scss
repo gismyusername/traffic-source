@@ -197,6 +197,39 @@ a { color: var(--text); text-decoration: none; &:hover { color: var(--text-secon
   width: 100%;
 }
 
+// ── Page Header (site info + date picker) ──
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.page-header-site {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-header-favicon {
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.page-header-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-heading);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.page-header-domain {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 // ── Metrics Strip ──
 .metrics-strip {
   display: flex;

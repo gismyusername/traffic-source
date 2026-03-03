@@ -12,7 +12,7 @@ const periods = [
   { value: '12m', label: '1Y' },
 ];
 
-export default function DashboardLayout({ children, siteId, siteName }) {
+export default function DashboardLayout({ children, siteId, siteName, siteDomain }) {
   const { period, setPeriod, setCustomRange } = useDateRange();
   const { logout } = useAuth();
   const router = useRouter();
@@ -58,22 +58,44 @@ export default function DashboardLayout({ children, siteId, siteName }) {
             </nav>
           </div>
           <div className="app-header-right">
-            <div className="date-picker">
-              {periods.map((p) => (
-                <button
-                  key={p.value}
-                  className={period === p.value ? 'active' : ''}
-                  onClick={() => { setCustomRange(null); setPeriod(p.value); }}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
             <button className="btn-ghost" onClick={logout}>Sign out</button>
           </div>
         </header>
 
         <main className="app-content">
+          {(siteName || siteDomain) && (
+            <div className="page-header">
+              <div className="page-header-site">
+                {siteDomain && (
+                  <img
+                    src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(siteDomain)}&sz=32`}
+                    alt=""
+                    width={24}
+                    height={24}
+                    className="page-header-favicon"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                )}
+                <div>
+                  <h1 className="page-header-name">{siteName || siteDomain}</h1>
+                  {siteName && siteDomain && (
+                    <span className="page-header-domain">{siteDomain}</span>
+                  )}
+                </div>
+              </div>
+              <div className="date-picker">
+                {periods.map((p) => (
+                  <button
+                    key={p.value}
+                    className={period === p.value ? 'active' : ''}
+                    onClick={() => { setCustomRange(null); setPeriod(p.value); }}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           {children}
         </main>
       </div>

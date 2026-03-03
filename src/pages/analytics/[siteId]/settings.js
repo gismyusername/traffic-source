@@ -11,7 +11,6 @@ export default function SiteSettings() {
   const [loading, setLoading] = useState(true);
   const [snippetData, setSnippetData] = useState(null);
   const [stripeSecretKey, setStripeSecretKey] = useState('');
-  const [stripeWebhookSecret, setStripeWebhookSecret] = useState('');
   const [stripeSaving, setStripeSaving] = useState(false);
   const [stripeMessage, setStripeMessage] = useState('');
   const [stripeError, setStripeError] = useState('');
@@ -28,7 +27,6 @@ export default function SiteSettings() {
           const data = await siteRes.json();
           setSite(data.site);
           setStripeSecretKey(data.site.stripe_secret_key || '');
-          setStripeWebhookSecret(data.site.stripe_webhook_secret || '');
         }
         if (snippetRes.ok) {
           setSnippetData(await snippetRes.json());
@@ -49,9 +47,6 @@ export default function SiteSettings() {
       if (stripeSecretKey && !stripeSecretKey.startsWith('••••')) {
         body.stripe_secret_key = stripeSecretKey;
       }
-      if (stripeWebhookSecret && !stripeWebhookSecret.startsWith('••••')) {
-        body.stripe_webhook_secret = stripeWebhookSecret;
-      }
       if (Object.keys(body).length === 0) {
         setStripeMessage('No changes to save');
         return;
@@ -64,8 +59,7 @@ export default function SiteSettings() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setStripeSecretKey(data.site.stripe_secret_key || '');
-      setStripeWebhookSecret(data.site.stripe_webhook_secret || '');
-      setStripeMessage('Stripe keys saved');
+      setStripeMessage('Stripe key saved');
     } catch (err) {
       setStripeError(err.message);
     } finally {
@@ -99,7 +93,7 @@ export default function SiteSettings() {
       <Head>
         <title>Settings - {site.name} - Traffic Source</title>
       </Head>
-      <DashboardLayout siteId={siteId} siteName={site.name}>
+      <DashboardLayout siteId={siteId} siteName={site.name} siteDomain={site.domain}>
         <h2 className="page-title">Site Settings</h2>
 
         {/* ── Tracking Snippet ── */}
@@ -123,7 +117,7 @@ export default function SiteSettings() {
                 </div>
 
                 <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 16 }}>
-                  For Stripe conversion tracking, add this to your checkout flow:
+                  For Stripe conversion tracking, pass the tracking cookies as metadata in your checkout:
                 </p>
                 <div className="snippet-block">
                   <button className="copy-btn" onClick={() => copyToClipboard(snippetData.stripeSnippet)}>
@@ -131,24 +125,9 @@ export default function SiteSettings() {
                   </button>
                   {snippetData.stripeSnippet}
                 </div>
-
-                <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 16 }}>
-                  Stripe Webhook URL:
-                </p>
-                <div className="snippet-block">
-                  <button className="copy-btn" onClick={() => copyToClipboard(snippetData.webhookUrl)}>
-                    Copy
-                  </button>
-                  {snippetData.webhookUrl}
-                </div>
                 <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>
-                  Add this URL in your Stripe Dashboard under Developers &gt; Webhooks. Listen for these events:
+                  Traffic Source will automatically sync payments from Stripe. No webhook setup needed.
                 </p>
-                <ul style={{ fontSize: 12, color: 'var(--text-muted)', margin: '4px 0 0 16px', padding: 0 }}>
-                  {snippetData.webhookEvents?.map((evt) => (
-                    <li key={evt}><code>{evt}</code></li>
-                  ))}
-                </ul>
               </>
             ) : (
               <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Could not load snippet data.</p>
@@ -171,7 +150,8 @@ export default function SiteSettings() {
             )}
             {stripeError && <div className="auth-error">{stripeError}</div>}
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>
-              Enter your Stripe API keys for this site. You can find these in your Stripe Dashboard under Developers &gt; API keys.
+              Enter your Stripe Secret Key. You can find it in your Stripe Dashboard under Developers &gt; API keys.
+              Traffic Source will automatically sync your payments &mdash; no webhook setup required.
             </p>
             <form onSubmit={handleSaveStripe} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div className="form-group">
@@ -183,20 +163,8 @@ export default function SiteSettings() {
                   placeholder="sk_live_..."
                 />
               </div>
-              <div className="form-group">
-                <label>Webhook Secret</label>
-                <input
-                  type="password"
-                  value={stripeWebhookSecret}
-                  onChange={(e) => setStripeWebhookSecret(e.target.value)}
-                  placeholder="whsec_..."
-                />
-              </div>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                Listen for <code>checkout.session.completed</code> and <code>charge.refunded</code> events.
-              </p>
               <button type="submit" className="btn btn-primary" disabled={stripeSaving} style={{ alignSelf: 'flex-start' }}>
-                {stripeSaving ? 'Saving...' : 'Save Keys'}
+                {stripeSaving ? 'Saving...' : 'Save Key'}
               </button>
             </form>
           </div>

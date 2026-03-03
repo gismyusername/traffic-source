@@ -27,16 +27,13 @@ export default function Analytics() {
   }
 
   const conv = data.conversions?.totals || {};
-  const revenuePerVisitor = data.current.visitors > 0
-    ? ((conv.revenue || 0) / data.current.visitors)
-    : 0;
 
   return (
     <>
       <Head>
         <title>{data.site?.name || 'Analytics'} - Traffic Source</title>
       </Head>
-      <DashboardLayout siteId={siteId} siteName={data.site?.name}>
+      <DashboardLayout siteId={siteId} siteName={data.site?.name} siteDomain={data.site?.domain}>
 
         {/* ── Realtime Active Users ── */}
         <RealtimeUsers />
@@ -44,9 +41,9 @@ export default function Analytics() {
         {/* ── Metrics Strip ── */}
         <MetricStrip metrics={[
           { label: 'Visitors', value: data.current.visitors, change: data.changes.visitors },
+          { label: 'Pageviews', value: data.current.pageViews, change: data.changes.pageViews },
           { label: 'Revenue', value: conv.revenue || 0, format: 'currency' },
           { label: 'Conversion rate', value: conv.conversionRate || 0, format: 'percent' },
-          { label: 'Revenue/visitor', value: Math.round(revenuePerVisitor), format: 'currency' },
           { label: 'Bounce rate', value: data.current.bounceRate, change: data.changes.bounceRate, format: 'percent' },
           { label: 'Session time', value: data.current.avgDuration, change: data.changes.avgDuration, format: 'duration' },
         ]} />

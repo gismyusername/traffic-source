@@ -20,26 +20,21 @@ export default withAuth(function handler(req, res) {
   const trackingSnippet = `<!-- Traffic Source Analytics -->
 <script defer src="${appUrl}/t.js" data-site="${site.id}"></script>`;
 
-  const stripeSnippet = `<!-- Stripe Conversion Tracking -->
-<script>
-// Add this to your checkout button handler:
-function getTrackingRef() {
-  if (window.__ts) {
-    return window.__ts.vid + '|' + window.__ts.sid() + '|${site.id}';
-  }
-  return '';
-}
-// Pass the return value as client_reference_id when creating a Stripe Checkout Session
-</script>`;
-
-  const webhookUrl = `${appUrl}/api/stripe/webhook/${site.id}`;
-  const webhookEvents = ['checkout.session.completed', 'payment_intent.succeeded', 'charge.refunded'];
+  const stripeSnippet = `// In your checkout API route, pass the tracking cookies as metadata:
+const session = await stripe.checkout.sessions.create({
+  line_items: [{ price: 'price_xxx', quantity: 1 }],
+  mode: 'payment',
+  metadata: {
+    ts_visitor_id: req.cookies._ts_vid || '',
+    ts_session_id: req.cookies._ts_sid || '',
+  },
+  success_url: 'https://${site.domain}/success',
+  cancel_url: 'https://${site.domain}/cancel',
+});`;
 
   res.status(200).json({
     site,
     trackingSnippet,
     stripeSnippet,
-    webhookUrl,
-    webhookEvents,
   });
 });

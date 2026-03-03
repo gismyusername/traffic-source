@@ -94,10 +94,26 @@ export default withAuth(function handler(req, res) {
      LIMIT 20`
   );
 
+  // Fallback: find session data by visitor_id when session_id JOIN returned nulls
+  const visitorSessionStmt = db.prepare(
+    `SELECT country, city, browser, os, device_type, entry_page, exit_page, page_count, duration
+     FROM sessions
+     WHERE site_id = ? AND visitor_id = ?
+     ORDER BY started_at DESC LIMIT 1`
+  );
+
   // Enrich each conversion with time-to-complete and page journey
   const enriched = conversions.map((conv) => {
     let timeToComplete = null;
     let journey = [];
+
+    // If LEFT JOIN returned no session data, try finding by visitor_id
+    if (!conv.country && !conv.browser && conv.visitor_id) {
+      const fallbackSession = visitorSessionStmt.get(siteId, conv.visitor_id);
+      if (fallbackSession) {
+        conv = { ...conv, ...fallbackSession, session_duration: fallbackSession.duration };
+      }
+    }
 
     if (conv.visitor_id) {
       const firstSession = firstSessionStmt.get(siteId, conv.visitor_id);

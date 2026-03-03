@@ -25,7 +25,7 @@ export default withAuth(function handler(req, res) {
   }
 
   if (req.method === 'PUT') {
-    const { domain, name, stripe_secret_key, stripe_webhook_secret } = req.body;
+    const { domain, name, stripe_secret_key } = req.body;
     const cleanDomain = domain
       ? domain.replace(/^https?:\/\//, '').replace(/\/+$/, '')
       : site.domain;
@@ -39,12 +39,6 @@ export default withAuth(function handler(req, res) {
     if (stripe_secret_key !== undefined) {
       db.prepare('UPDATE sites SET stripe_secret_key = ? WHERE id = ?').run(
         stripe_secret_key || null,
-        id
-      );
-    }
-    if (stripe_webhook_secret !== undefined) {
-      db.prepare('UPDATE sites SET stripe_webhook_secret = ? WHERE id = ?').run(
-        stripe_webhook_secret || null,
         id
       );
     }

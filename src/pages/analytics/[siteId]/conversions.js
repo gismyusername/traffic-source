@@ -50,7 +50,7 @@ export default function Conversions() {
       <Head>
         <title>Conversions - Traffic Source</title>
       </Head>
-      <DashboardLayout siteId={siteId} siteName={data?.site?.name}>
+      <DashboardLayout siteId={siteId} siteName={data?.site?.name} siteDomain={data?.site?.domain}>
         <div className="page-nav">
           <button
             className="btn btn-secondary btn-sm"

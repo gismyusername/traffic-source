@@ -18,6 +18,7 @@
     vid = uid();
     localStorage.setItem(VID_KEY, vid);
   }
+  document.cookie = VID_KEY + '=' + vid + ';path=/;max-age=31536000;SameSite=Lax';
 
   function uid() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
@@ -34,6 +35,7 @@
       sessionStorage.setItem(SID_KEY, sid);
     }
     sessionStorage.setItem(STS_KEY, String(Date.now()));
+    document.cookie = SID_KEY + '=' + sid + ';path=/;max-age=1800;SameSite=Lax';
     return sid;
   }
 
