@@ -70,19 +70,24 @@
   // Track initial page view
   send({ type: 'pageview' });
 
-  // SPA support
+  // SPA support — only fire when URL actually changes
+  var lastUrl = location.href;
   var pushState = history.pushState;
   var replaceState = history.replaceState;
   history.pushState = function () {
     pushState.apply(this, arguments);
-    setTimeout(function () { send({ type: 'pageview' }); }, 0);
+    setTimeout(function () {
+      if (location.href !== lastUrl) { lastUrl = location.href; send({ type: 'pageview' }); }
+    }, 0);
   };
   history.replaceState = function () {
     replaceState.apply(this, arguments);
-    setTimeout(function () { send({ type: 'pageview' }); }, 0);
+    setTimeout(function () {
+      if (location.href !== lastUrl) { lastUrl = location.href; send({ type: 'pageview' }); }
+    }, 0);
   };
   window.addEventListener('popstate', function () {
-    send({ type: 'pageview' });
+    if (location.href !== lastUrl) { lastUrl = location.href; send({ type: 'pageview' }); }
   });
 
   // Expose for Stripe integration
