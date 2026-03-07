@@ -85,13 +85,22 @@ export async function syncStripePayments() {
         const amount = session.amount_total || 0;
         const currency = session.currency || 'usd';
 
+        // Look up affiliate attribution for this visitor
+        let affiliateId = null;
+        if (visitorId) {
+          const affiliateVisit = db
+            .prepare('SELECT affiliate_id FROM affiliate_visits WHERE visitor_id = ? AND site_id = ? ORDER BY landed_at DESC LIMIT 1')
+            .get(visitorId, site.id);
+          if (affiliateVisit) affiliateId = affiliateVisit.affiliate_id;
+        }
+
         db.prepare(
           `INSERT OR IGNORE INTO conversions (
             site_id, session_id, visitor_id, stripe_event_id,
             stripe_customer_id, stripe_customer_email, payment_intent_id,
             amount, currency, status,
-            utm_source, utm_medium, utm_campaign, referrer_domain
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            utm_source, utm_medium, utm_campaign, referrer_domain, affiliate_id
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).run(
           site.id,
           sessionId,
@@ -106,7 +115,8 @@ export async function syncStripePayments() {
           utmSource,
           utmMedium,
           utmCampaign,
-          referrerDomain
+          referrerDomain,
+          affiliateId
         );
 
         totalProcessed++;

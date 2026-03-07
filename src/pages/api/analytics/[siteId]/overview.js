@@ -223,6 +223,33 @@ export default withAuth(function handler(req, res) {
     )
     .all(siteId, range.from, dateEnd);
 
+  // --- Affiliates ---
+  const affiliateBreakdown = db
+    .prepare(
+      `SELECT a.name, a.slug,
+        COALESCE(v.visits, 0) as visits,
+        COALESCE(c.conversions, 0) as conversions,
+        COALESCE(c.revenue, 0) as revenue
+       FROM affiliates a
+       LEFT JOIN (
+         SELECT affiliate_id, COUNT(*) as visits
+         FROM affiliate_visits
+         WHERE site_id = ? AND datetime(landed_at) BETWEEN ? AND ?
+         GROUP BY affiliate_id
+       ) v ON v.affiliate_id = a.id
+       LEFT JOIN (
+         SELECT affiliate_id, COUNT(*) as conversions, SUM(amount) as revenue
+         FROM conversions
+         WHERE site_id = ? AND status = 'completed'
+           AND datetime(created_at) BETWEEN ? AND ?
+         GROUP BY affiliate_id
+       ) c ON c.affiliate_id = a.id
+       WHERE a.site_id = ?
+       ORDER BY COALESCE(c.revenue, 0) DESC, COALESCE(v.visits, 0) DESC
+       LIMIT 10`
+    )
+    .all(siteId, range.from, dateEnd, siteId, range.from, dateEnd, siteId);
+
   function pctChange(curr, prev) {
     if (prev === 0) return curr > 0 ? 100 : 0;
     return (((curr - prev) / prev) * 100).toFixed(1);
@@ -264,5 +291,6 @@ export default withAuth(function handler(req, res) {
       bySource: convBySource,
       timeSeries: convTimeSeries,
     },
+    affiliates: affiliateBreakdown,
   });
 });

@@ -11,7 +11,14 @@
   var VID_KEY = '_ts_vid';
   var SID_KEY = '_ts_sid';
   var STS_KEY = '_ts_sts';
+  var REF_KEY = '_ts_ref';
   var TIMEOUT = 30 * 60 * 1000;
+
+  // Detect and persist affiliate ref parameter
+  var refParam = new URLSearchParams(location.search).get('ref');
+  if (refParam) {
+    localStorage.setItem(REF_KEY, refParam);
+  }
 
   var vid = localStorage.getItem(VID_KEY);
   if (!vid) {
@@ -60,6 +67,9 @@
     data.screen_width = screen.width;
     data.screen_height = screen.height;
     Object.assign(data, getUtm());
+
+    var ref = localStorage.getItem(REF_KEY);
+    if (ref) data.ref = ref;
 
     var payload = JSON.stringify(data);
     if (navigator.sendBeacon) {

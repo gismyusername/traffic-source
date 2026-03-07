@@ -131,6 +131,42 @@ const migrations = [
       CREATE INDEX IF NOT EXISTS idx_sessions_site_last_activity ON sessions(site_id, last_activity);
     `);
   },
+  // Migration 4: Affiliate tracking
+  (db) => {
+    db.exec(`
+      CREATE TABLE affiliates (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        site_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        slug TEXT NOT NULL,
+        commission_rate REAL DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE,
+        UNIQUE(site_id, slug)
+      );
+
+      CREATE TABLE affiliate_visits (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        affiliate_id INTEGER NOT NULL,
+        site_id INTEGER NOT NULL,
+        visitor_id TEXT NOT NULL,
+        session_id TEXT,
+        landing_page TEXT,
+        landed_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (affiliate_id) REFERENCES affiliates(id) ON DELETE CASCADE,
+        FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
+      );
+
+      ALTER TABLE conversions ADD COLUMN affiliate_id INTEGER REFERENCES affiliates(id);
+
+      CREATE INDEX idx_affiliates_site ON affiliates(site_id);
+      CREATE INDEX idx_affiliates_slug ON affiliates(site_id, slug);
+      CREATE INDEX idx_affiliate_visits_affiliate ON affiliate_visits(affiliate_id);
+      CREATE INDEX idx_affiliate_visits_site ON affiliate_visits(site_id, landed_at);
+      CREATE INDEX idx_affiliate_visits_visitor ON affiliate_visits(visitor_id);
+      CREATE INDEX idx_conversions_affiliate ON conversions(affiliate_id);
+    `);
+  },
 ];
 
 export function runMigrations(db) {

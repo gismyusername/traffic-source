@@ -106,6 +106,24 @@ export default function handler(req, res) {
       ).run(data.pathname, data.session_id);
     }
 
+    // Affiliate tracking
+    if (data.ref) {
+      const affiliate = db
+        .prepare('SELECT id FROM affiliates WHERE site_id = ? AND slug = ?')
+        .get(data.site_id, data.ref);
+      if (affiliate) {
+        const alreadyTracked = db
+          .prepare('SELECT id FROM affiliate_visits WHERE affiliate_id = ? AND visitor_id = ? AND session_id = ?')
+          .get(affiliate.id, data.visitor_id, data.session_id);
+        if (!alreadyTracked) {
+          db.prepare(
+            `INSERT INTO affiliate_visits (affiliate_id, site_id, visitor_id, session_id, landing_page)
+             VALUES (?, ?, ?, ?, ?)`
+          ).run(affiliate.id, data.site_id, data.visitor_id, data.session_id, data.pathname);
+        }
+      }
+    }
+
     if (data.type === 'pageview') {
       let querystring = null;
       try {

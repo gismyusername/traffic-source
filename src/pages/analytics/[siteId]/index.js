@@ -140,6 +140,45 @@ export default function Analytics() {
           />
         </div>
 
+        {/* ── Affiliates ── */}
+        {data.affiliates?.length > 0 && (
+          <div className="panel" style={{ marginBottom: 20 }}>
+            <div className="panel-header">
+              <div className="panel-tabs">
+                <button className="panel-tab active">Affiliates</button>
+              </div>
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => router.push(`/analytics/${siteId}/affiliates`)}
+              >
+                View all &rarr;
+              </button>
+            </div>
+            <div className="panel-body" style={{ padding: 0 }}>
+              <table className="journey-table">
+                <thead>
+                  <tr>
+                    <th>Affiliate</th>
+                    <th>Visits</th>
+                    <th>Conversions</th>
+                    <th>Revenue</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.affiliates.map((a, i) => (
+                    <tr key={i}>
+                      <td><span style={{ fontWeight: 600 }}>{a.name}</span></td>
+                      <td>{a.visits}</td>
+                      <td>{a.conversions}</td>
+                      <td style={{ fontWeight: 600 }}>${((a.revenue || 0) / 100).toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {/* ── Journey for Payment ── */}
         {data.conversions?.bySource?.length > 0 && (
           <div className="panel" style={{ marginBottom: 20 }}>
