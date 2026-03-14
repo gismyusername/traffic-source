@@ -12,6 +12,9 @@ export default function AffiliateDetail() {
   const { getParams } = useDateRange();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [shareToken, setShareToken] = useState(null);
+  const [shareCopied, setShareCopied] = useState(false);
+  const [shareLoading, setShareLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!siteId || !affiliateId) return;
@@ -33,6 +36,47 @@ export default function AffiliateDetail() {
     if (!data) return;
     const domain = data.site?.domain || 'yoursite.com';
     navigator.clipboard.writeText(`https://${domain}?ref=${data.affiliate.slug}`);
+  };
+
+  // Fetch existing share token
+  useEffect(() => {
+    if (!siteId || !affiliateId) return;
+    fetch(`/api/analytics/${siteId}/affiliates/${affiliateId}/share`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d) setShareToken(d.share_token); });
+  }, [siteId, affiliateId]);
+
+  const generateShareLink = async () => {
+    setShareLoading(true);
+    try {
+      const res = await fetch(`/api/analytics/${siteId}/affiliates/${affiliateId}/share`, { method: 'POST' });
+      if (res.ok) {
+        const d = await res.json();
+        setShareToken(d.share_token);
+      }
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
+  const revokeShareLink = async () => {
+    setShareLoading(true);
+    try {
+      const res = await fetch(`/api/analytics/${siteId}/affiliates/${affiliateId}/share`, { method: 'DELETE' });
+      if (res.ok) {
+        setShareToken(null);
+        setShareCopied(false);
+      }
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
+  const copyShareLink = () => {
+    const url = `${window.location.origin}/shared/affiliate/${shareToken}`;
+    navigator.clipboard.writeText(url);
+    setShareCopied(true);
+    setTimeout(() => setShareCopied(false), 2000);
   };
 
   if (loading || !data) {
@@ -89,6 +133,54 @@ export default function AffiliateDetail() {
               https://{data.site?.domain}?ref={affiliate.slug}
             </code>
             <button className="btn btn-primary btn-sm" onClick={copyLink}>Copy</button>
+          </div>
+        </div>
+
+        {/* Share Dashboard */}
+        <div className="panel" style={{ marginBottom: 20 }}>
+          <div className="panel-header">
+            <div className="panel-tabs">
+              <button className="panel-tab active">Partner Dashboard Link</button>
+            </div>
+          </div>
+          <div className="panel-body" style={{ padding: 20 }}>
+            {shareToken ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
+                  Share this link with your affiliate partner so they can view their performance.
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <code style={{ flex: 1, fontSize: 13, padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {typeof window !== 'undefined' ? `${window.location.origin}/shared/affiliate/${shareToken}` : ''}
+                  </code>
+                  <button className="btn btn-primary btn-sm" onClick={copyShareLink}>
+                    {shareCopied ? 'Copied!' : 'Copy'}
+                  </button>
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={revokeShareLink}
+                    disabled={shareLoading}
+                    style={{ color: 'var(--error)' }}
+                  >
+                    Revoke
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
+                  Generate a public link so your partner can see their clicks, conversions, and commission.
+                </p>
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={generateShareLink}
+                  disabled={shareLoading}
+                  style={{ flexShrink: 0 }}
+                >
+                  {shareLoading ? 'Generating...' : 'Generate Link'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

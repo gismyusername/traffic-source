@@ -47,15 +47,27 @@ export default function RealtimeUsers() {
 
       {expanded && data.users.length > 0 && (
         <div className="realtime-widget-list">
+          <div className="realtime-widget-thead">
+            <span className="realtime-widget-th realtime-widget-th--location">Location</span>
+            <span className="realtime-widget-th realtime-widget-th--page">Page</span>
+            <span className="realtime-widget-th realtime-widget-th--source">Source</span>
+            <span className="realtime-widget-th realtime-widget-th--browser">Browser</span>
+          </div>
           {data.users.slice(0, 10).map((user) => (
             <div className="realtime-widget-row" key={user.visitor_id}>
-              <CountryFlag code={user.country} size="s" />
-              <span className="realtime-widget-country">
+              <span className="realtime-widget-cell realtime-widget-cell--location">
+                <CountryFlag code={user.country} size="s" />
                 {user.country ? getCountryName(user.country) : 'Unknown'}
               </span>
-              <span className="realtime-widget-page">{user.current_page || '/'}</span>
-              <span className="realtime-widget-source">{user.source || 'Direct'}</span>
-              <span className="realtime-widget-browser">{user.browser || 'Unknown'}</span>
+              <span className="realtime-widget-cell realtime-widget-cell--page" title={user.current_page || '/'}>
+                {user.current_page || '/'}
+              </span>
+              <span className="realtime-widget-cell realtime-widget-cell--source">
+                {user.source || 'Direct'}
+              </span>
+              <span className="realtime-widget-cell realtime-widget-cell--browser">
+                {user.browser || 'Unknown'}
+              </span>
             </div>
           ))}
           {data.users.length > 10 && (

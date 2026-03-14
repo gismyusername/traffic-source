@@ -167,6 +167,13 @@ const migrations = [
       CREATE INDEX idx_conversions_affiliate ON conversions(affiliate_id);
     `);
   },
+  // Migration 5: Affiliate share tokens for public dashboards
+  (db) => {
+    db.exec(`
+      ALTER TABLE affiliates ADD COLUMN share_token TEXT;
+      CREATE UNIQUE INDEX idx_affiliates_share_token ON affiliates(share_token);
+    `);
+  },
 ];
 
 export function runMigrations(db) {
