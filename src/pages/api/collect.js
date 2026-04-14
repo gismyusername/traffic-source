@@ -9,7 +9,7 @@ export const config = {
   },
 };
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -36,9 +36,28 @@ export default function handler(req, res) {
     const os = ua.getOS();
     const device = ua.getDevice();
 
-    const country = req.headers['cf-ipcountry'] || null;
-    const city = req.headers['cf-ipcity'] || null;
-    const continent = req.headers['cf-ipcontinent'] || null;
+    let country = req.headers['cf-ipcountry'] || null;
+    let city = req.headers['cf-ipcity'] || null;
+    let continent = req.headers['cf-ipcontinent'] || null;
+
+    // Fallback: IP geolocation when Cloudflare headers are missing
+    if (!country) {
+      try {
+        const forwarded = req.headers['x-forwarded-for'];
+        const ip = forwarded ? forwarded.split(',')[0].trim() : req.socket.remoteAddress;
+        if (ip && ip !== '127.0.0.1' && ip !== '::1') {
+          const geoRes = await fetch(`http://ip-api.com/json/${ip}?fields=countryCode,city,continent`);
+          if (geoRes.ok) {
+            const geo = await geoRes.json();
+            country = geo.countryCode || null;
+            city = geo.city || null;
+            continent = geo.continent || null;
+          }
+        }
+      } catch {
+        // geo lookup failed, continue without it
+      }
+    }
 
     let referrerDomain = null;
     if (data.referrer) {

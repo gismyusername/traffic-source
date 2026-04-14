@@ -2,7 +2,7 @@
 const nextConfig = {
   distDir: process.env.NEXT_BUILD_DIR || '.next',
   reactStrictMode: true,
-  serverExternalPackages: ['better-sqlite3', 'ua-parser-js'],
+  serverExternalPackages: ['better-sqlite3', 'ua-parser-js', '@google-cloud/storage'],
   async headers() {
     return [
       {

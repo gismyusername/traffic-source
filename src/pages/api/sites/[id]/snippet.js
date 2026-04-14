@@ -15,7 +15,7 @@ export default withAuth(function handler(req, res) {
 
   if (!site) return res.status(404).json({ error: 'Site not found' });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
   const trackingSnippet = `<!-- Traffic Source Analytics -->
 <script defer src="${appUrl}/t.js" data-site="${site.id}"></script>`;
